@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tasky - Gestión de Tareas</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <aside class="sidebar">
+            <div class="logo">
+                <div class="logo-icon">
+                    <i class="fas fa-tasks"></i>
+                </div>
+                <span>Tasky</span>
+            </div>
+            <nav>
+                <div class="nav-item active">
+                    <i class="fas fa-home"></i>
+                    <span>Dashboard</span>
+                </div>
+                <div class="nav-item">
+                    <i class="fas fa-clipboard-list"></i>
+                    <span>Tasks</span>
+                </div>
+                <div class="nav-item">
+                    <i class="fas fa-calendar-alt"></i>
+                    <span>Calendar</span>
+                </div>
+                <div class="nav-item">
+                    <i class="fas fa-users"></i>
+                    <span>Members</span>
+                </div>
+            </nav>
+        </aside>
+
+        <main class="main-content">
+            <header class="header">
+                <div class="search-bar">
+                    <i class="fas fa-search search-icon"></i>
+                    <input type="text" placeholder="Search tasks" id="searchInput">
+                </div>
+                <div class="header-actions">
+                    <button class="icon-btn">
+                        <i class="fas fa-comment-dots"></i>
+                    </button>
+                    <button class="icon-btn">
+                        <i class="fas fa-bell"></i>
+                    </button>
+                    <div class="user-avatar">
+                        <i class="fas fa-user"></i>
+                    </div>
+                </div>
+            </header>
+
+            <div class="controls">
+                <div class="view-controls">
+                    <button class="btn" id="previewBtn" onclick="togglePreview()">
+                        <i class="fas fa-eye"></i>
+                        <span>Preview</span>
+                    </button>
+                    
+                    <div class="filter-dropdown">
+                        <button class="btn" id="sortBtn" onclick="toggleSort()">
+                            <i class="fas fa-sort"></i>
+                            <span>Sort</span>
+                        </button>
+                        <div class="dropdown-content" id="sortDropdown">
+                            <div class="sort-option" onclick="sortTasks('date')">
+                                <i class="fas fa-calendar"></i> Por fecha
+                            </div>
+                            <div class="sort-option" onclick="sortTasks('priority')">
+                                <i class="fas fa-exclamation-circle"></i> Por prioridad
+                            </div>
+                            <div class="sort-option" onclick="sortTasks('category')">
+                                <i class="fas fa-tag"></i> Por materia
+                            </div>
+                            <div class="sort-option" onclick="sortTasks('title')">
+                                <i class="fas fa-font"></i> Por título
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="filter-dropdown">
+                        <button class="btn" id="filterBtn" onclick="toggleFilter()">
+                            <i class="fas fa-filter"></i>
+                            <span>Filter</span>
+                        </button>
+                        <div class="dropdown-content" id="filterDropdown">
+                            <div class="filter-section">
+                                <div class="filter-title">Prioridad</div>
+                                <div class="filter-option">
+                                    <input type="checkbox" id="filter-high" value="high" onchange="applyFilters()">
+                                    <label for="filter-high">Alta</label>
+                                </div>
+                                <div class="filter-option">
+                                    <input type="checkbox" id="filter-medium" value="medium" onchange="applyFilters()">
+                                    <label for="filter-medium">Media</label>
+                                </div>
+                                <div class="filter-option">
+                                    <input type="checkbox" id="filter-low" value="low" onchange="applyFilters()">
+                                    <label for="filter-low">Baja</label>
+                                </div>
+                            </div>
+                            <div class="filter-section">
+                                <div class="filter-title">Materia</div>
+                                <div id="categoryFilters"></div>
+                            </div>
+                            <div style="margin-top: 10px; padding-top: 10px; border-top: 1px solid #e5e5e7;">
+                                <button class="btn" onclick="clearFilters()" style="width: 100%; justify-content: center;">
+                                    <i class="fas fa-times"></i>
+                                    Limpiar filtros
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div>
+                    <button class="btn-primary" onclick="openModal()">
+                        <i class="fas fa-plus"></i>
+                        Add task
+                    </button>
+                </div>
+            </div>
+
+            <div class="boards-container" id="boardsContainer">
+
+            </div>
+        </main>
+    </div>
+
+    <div class="modal" id="taskModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title" id="modalTitle">Nueva Tarea</h2>
+                <button class="close-btn" onclick="closeModal()">×</button>
+            </div>
+            <form id="taskForm">
+                <input type="hidden" id="taskId">
+                
+                <div class="form-group">
+                    <label for="taskTitle">Título de la tarea *</label>
+                    <input type="text" id="taskTitle" required placeholder="Ej: Diseñar interfaz de usuario">
+                </div>
+
+                <div class="form-group">
+                    <label for="taskDescription">Descripción * (máximo 500 caracteres)</label>
+                    <textarea id="taskDescription" required placeholder="Describe los detalles de la tarea..." maxlength="500"></textarea>
+                    <div class="char-counter" id="charCounter">0 / 500</div>
+                </div>
+
+                <div class="form-group">
+                    <label for="taskDate">Fecha de entrega *</label>
+                    <input type="date" id="taskDate" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="taskTime">Hora de entrega</label>
+                    <input type="time" id="taskTime" value="18:00">
+                </div>
+
+                <div class="form-group">
+                    <label for="taskCategory">Materia/Área *</label>
+                    <div class="category-manager">
+                        <select id="taskCategory" required>
+                            <option value="">Seleccionar o crear nueva...</option>
+                        </select>
+                        <button type="button" class="btn btn-icon" onclick="showCategoryInput()" title="Agregar nueva materia">
+                            <i class="fas fa-plus"></i>
+                        </button>
+                    </div>
+                    <div id="newCategoryInput" style="display: none; margin-top: 10px;">
+                        <div class="category-manager">
+                            <input type="text" id="newCategoryName" placeholder="Nombre de la nueva materia">
+                            <button type="button" class="btn btn-icon btn-primary" onclick="addCategory()">
+                                <i class="fas fa-check"></i>
+                            </button>
+                            <button type="button" class="btn btn-icon btn-secondary" onclick="hideCategoryInput()">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div id="categoriesList" class="category-list"></div>
+                </div>
+
+                <div class="form-group">
+                    <label for="taskPriority">Prioridad *</label>
+                    <select id="taskPriority" required>
+                        <option value="">Seleccionar...</option>
+                        <option value="low">Baja</option>
+                        <option value="medium">Media</option>
+                        <option value="high">Alta</option>
+                    </select>
+                </div>
+
+                <div class="form-group" id="statusGroup" style="display: none;">
+                    <label for="taskStatus">Estado *</label>
+                    <select id="taskStatus">
+                        <option value="progress">In Progress</option>
+                        <option value="completed">Completed Task</option>
+                        <option value="overdue">Over-Due</option>
+                    </select>
+                </div>
+
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal()">
+                        <i class="fas fa-times"></i>
+                        Cancelar
+                    </button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i>
+                        Guardar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="modal" id="taskDetailModal">
+        <div class="modal-content large">
+            <div class="modal-header">
+                <h2 class="modal-title">
+                    <i class="fas fa-info-circle"></i>
+                    Detalles de la Tarea
+                </h2>
+                <button class="close-btn" onclick="closeDetailModal()">×</button>
+            </div>
+            <div class="task-detail" id="taskDetailContent">
+
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
